@@ -1,41 +1,41 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const year = document.getElementById("year");
-  if (year) {
-    year.textContent = new Date().getFullYear();
+  const yearNode = document.getElementById("year");
+  if (yearNode) {
+    yearNode.textContent = new Date().getFullYear();
   }
 
-  const navToggle = document.querySelector(".nav-toggle");
-  const navMenu = document.querySelector(".nav-menu");
-  const navLinks = document.querySelectorAll(".nav-menu a");
+  const navLinks = document.querySelectorAll(".main-nav a");
+  const sections = [...document.querySelectorAll("main section[id]")];
 
-  if (navToggle && navMenu) {
-    navToggle.addEventListener("click", () => {
-      const isOpen = navMenu.classList.toggle("open");
-      navToggle.setAttribute("aria-expanded", String(isOpen));
+  const activateLink = () => {
+    let currentId = "";
+    const scrollPosition = window.scrollY + 120;
+
+    sections.forEach((section) => {
+      if (scrollPosition >= section.offsetTop) {
+        currentId = section.getAttribute("id");
+      }
     });
-  }
+
+    navLinks.forEach((link) => {
+      const isActive = link.getAttribute("href") === `#${currentId}`;
+      link.classList.toggle("active", isActive);
+    });
+  };
 
   navLinks.forEach((link) => {
-    link.addEventListener("click", () => {
-      navMenu?.classList.remove("open");
-      navToggle?.setAttribute("aria-expanded", "false");
+    link.addEventListener("click", (event) => {
+      const href = link.getAttribute("href");
+      if (!href || !href.startsWith("#")) return;
+
+      const target = document.querySelector(href);
+      if (!target) return;
+
+      event.preventDefault();
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   });
 
-  const sections = document.querySelectorAll("main section[id]");
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-
-        navLinks.forEach((link) => {
-          const isActive = link.getAttribute("href") === `#${entry.target.id}`;
-          link.classList.toggle("active", isActive);
-        });
-      });
-    },
-    { threshold: 0.45 }
-  );
-
-  sections.forEach((section) => observer.observe(section));
+  activateLink();
+  window.addEventListener("scroll", activateLink, { passive: true });
 });
